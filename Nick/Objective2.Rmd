@@ -1,0 +1,130 @@
+---
+title: "Objective2"
+author: "Nick Wilson"
+date: "4/23/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+
+library(fivethirtyeight)
+library(tidyverse)
+library(lubridate)
+
+data("classic_rock_raw_data")
+
+# head(classic_rock_raw_data)
+
+```
+
+
+```{r}
+
+# separate the date and times
+crrd2 <- classic_rock_raw_data %>%
+  mutate( 
+    # time = format(strptime(date_time, "%Y-%m-%d %H:%M:%S"), "%H:%M:%S")
+    # time = hour(date_time)*3600 + minute(date_time)*60 + second(date_time)
+    weekday = wday(date_time, label = TRUE),
+    hour = hour(date_time),
+    minute = minute(date_time),
+    second = second(date_time)
+    )
+
+# head(crrd2)
+
+```
+
+
+```{r}
+
+# Define the breaks
+
+# # by hour
+# breaks <- c(seq(0,24,1))
+# labels <- c("12 AM", "1 AM", "2 AM", "3 AM", "4 AM", "5 AM", "6 AM", "7 AM", "8 AM", "9 AM", "10 AM", "11 AM", 
+#             "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM", "7 PM", "8 PM", "9 PM", "10 PM", "11 PM" )
+
+# by 6 hour period
+breaks <- c(seq(0,24,6))
+labels <- c("12 AM - 6 AM", "6 AM - 12 PM", "12 PM - 6 PM", "6 PM - 12 PM" )
+
+```
+
+
+```{r}
+
+crrd3 <- crrd2 %>%
+  mutate(
+    time_of_day = cut(hour
+                  ,breaks = breaks
+                  ,include.lowest = TRUE
+                  ,right = FALSE
+                  ,labels = labels
+                  )
+  )
+
+# head(crrd3)
+
+```
+
+
+
+```{r}
+
+# Number of times each song was played during each time of day
+top_songs_per_time_of_day <- crrd3 %>% 
+  group_by(time_of_day, song) %>%
+  summarise( n_plays = n() ) %>%
+  arrange(desc(time_of_day))
+
+top_songs_per_time_of_day <- top_songs_per_time_of_day %>%
+  mutate( percent = 100*n_plays/sum(n_plays) )
+
+# Get top values
+top_songs_per_time_of_day <- top_songs_per_time_of_day %>% top_n(3, n_plays)
+
+top_songs_per_time_of_day %>%
+  ggplot(aes(x = time_of_day, y = n_plays, fill = factor(song))) +
+  geom_bar(stat = "identity", position = position_dodge()) + theme_minimal()
+
+top_songs_per_time_of_day
+
+```
+
+
+
+```{r}
+
+top_artists_per_time_of_day <- crrd3 %>% 
+  group_by(time_of_day, artist) %>%
+  summarise( n_plays = n() ) %>%
+  arrange(desc(time_of_day)) %>%
+  top_n(3, n_plays)
+
+top_artists_per_time_of_day %>%
+  ggplot(aes(x = time_of_day, y = n_plays, fill = factor(artist))) +
+  geom_bar(stat = "identity", position = position_dodge()) + theme_minimal()
+
+```
+
+
+```{r}
+
+head(classic_rock_raw_data_2point1)
+
+```
+
+
+```{r}
+
+head(classic_rock_raw_data_2point1)
+
+```
+
