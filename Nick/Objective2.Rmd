@@ -163,7 +163,7 @@ top_songs_overall_over_time %>%
     title = "Top songs played throughout the day",
     x = "Time of Day",
     y = "Percent of Plays",
-    fill = "Song"
+    color = "Song"
     )
 
 ```
