@@ -19,6 +19,7 @@ library(lubridate)
 library(RColorBrewer)
 
 data("classic_rock_raw_data")
+data("classic_rock_song_list")
 
 # head(classic_rock_raw_data)
 
@@ -82,15 +83,25 @@ crrd3 <- crrd2 %>%
 ```{r, fig.width=10}
 
 # Number of total plays for each time of day
+crrd3 %>% 
+  group_by(time_of_day) %>%
+  summarise( songs_played = n() ) %>%
+  mutate( percent = 100*songs_played/sum(songs_played) )
 
 crrd3 %>% 
   group_by(time_of_day) %>%
-  summarise( n_plays = n() ) %>%
-  arrange(desc(time_of_day)) %>%
-  ggplot(aes(x = time_of_day, y = n_plays, fill = time_of_day)) +
+  summarise( songs_played = n(), percent = 100*songs_played/sum(songs_played)) %>%
+  ggplot(aes(x = time_of_day, y = songs_played, fill = time_of_day)) +
   geom_bar(stat = "identity", position = position_dodge(), color = 'black') + 
   theme_minimal() + 
-  scale_fill_brewer(palette = "YlOrRd")
+  scale_fill_brewer(palette = "YlOrRd") + 
+  theme(legend.position = "none") + 
+  labs(
+    title = "Number of songs played per time of day",
+    x = "Time of Day",
+    y = "Songs Played",
+    fill = ""
+    )
 
 
 ```
@@ -100,7 +111,7 @@ crrd3 %>%
 
 song_plays_per_time_of_day <- crrd3 %>% 
   group_by(time_of_day, song) %>%
-  summarise( n_plays = n() )
+  summarise( n_plays = n())
 
 song_plays_per_time_of_day <- song_plays_per_time_of_day %>%
   mutate( percent = 100*n_plays/sum(n_plays) )
@@ -121,9 +132,9 @@ top_songs_per_time_of_day
 # # most popular songs for each time of day by % of total plays
 # top_songs_per_time_of_day %>%
 #   ggplot(aes(x = time_of_day, y = percent, fill = factor(song), order = time_of_day)) +
-#   geom_bar(stat = "identity", position = position_dodge(), color = 'black') + 
-#   theme_minimal() + 
-#   scale_fill_brewer(palette = "YlOrRd")
+#   geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+#   theme_minimal() +
+#   scale_fill_manual(values = heat.colors(9))
 
 ```
 
@@ -147,14 +158,20 @@ top_songs_overall_over_time %>%
   ggplot(aes(x = time_of_day, y = percent, group = factor(song), color = factor(song))) + 
   geom_line() + 
   theme_minimal() +
-  scale_color_manual(values=c('#C8102E','#F1BE48', '#9B945F'))
+  scale_color_manual(values=c('#C8102E','#F1BE48', '#9B945F')) + 
+  labs(
+    title = "Top songs played throughout the day",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    fill = "Song"
+    )
 
 ```
 
 
 ### Artists
 
-```{r, fig.width=10}
+```{r,fig.width=10}
 
 artist_plays_per_time_of_day <- crrd3 %>% 
   group_by(time_of_day, artist) %>%
@@ -164,36 +181,59 @@ artist_plays_per_time_of_day <- artist_plays_per_time_of_day %>%
   mutate( percent = 100*n_plays/sum(n_plays) )
 
 # Get top values from each 
-top_artists <- artist_plays_per_time_of_day %>% top_n(3, n_plays)
+top_artists_per_time_of_day <- artist_plays_per_time_of_day %>% 
+  top_n(3, n_plays)
 
-# most popular artists for each time of day by # of plays
-top_artists %>%
-  ggplot(aes(x = time_of_day, y = n_plays, fill = factor(artist))) +
-  geom_bar(stat = "identity", position = position_dodge(), color = 'black') + 
-  theme_minimal() + 
-  scale_fill_brewer(palette = "YlOrRd")
+top_artists_per_time_of_day
+
+# # most popular artists for each time of day by # of plays
+# top_artists_per_time_of_day %>%
+#   ggplot(aes(x = time_of_day, y = n_plays, fill = factor(artist))) +
+#   geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+#   theme_minimal() +
+#   scale_fill_brewer(palette = "YlOrRd")
 
 # most popular artists for each time of day by % of total plays
-top_artists %>%
-  ggplot(aes(x = time_of_day, y = percent, fill = factor(artist))) +
-  geom_bar(stat = "identity", position = position_dodge(), color = 'black') + 
-  theme_minimal() + 
-  scale_fill_brewer(palette = "YlOrRd")
+top_artists_per_time_of_day %>%
+  ggplot(aes(x = time_of_day, y = percent, fill = factor(artist), order = time_of_day)) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd") + 
+  labs(
+    title = "Top artists for each time of the day",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    fill = "Artist"
+    )
 
 ```
 
 
-```{r,fig.width=10}
+```{r, fig.width=10}
 
-# when are the most popular songs featured most?
+# when are the most popular artists featured most?
 
-top_artists_per_time_of_day <- artist_plays_per_time_of_day %>%
-  filter(artist %in% top_artists$artist)
+# get the most popular artists
+ top_artists_overall <- crrd3 %>% 
+  group_by(artist) %>% 
+  summarise( n_plays = n() ) %>% 
+  top_n(5, n_plays) %>%
+  arrange(desc(n_plays))
 
-top_artists_per_time_of_day %>%
+
+top_artists_overall_over_time <- artist_plays_per_time_of_day %>%
+  filter(artist %in% top_artists_overall$artist)
+
+top_artists_overall_over_time %>%
   ggplot(aes(x = time_of_day, y = percent, group = factor(artist), color = factor(artist))) + 
   geom_line() + 
   theme_minimal() +
-  scale_color_manual(values=c('#C8102E','#F1BE48', '#9B945F', '#BE531C'))
+  scale_color_manual(values=c('#ff0000','#ff5a00','#ff9a00','#ffce00','#f0ff00')) + 
+  labs(
+    title = "Top artists played throughout the day",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    fill = "Artist"
+    )
 
 ```
