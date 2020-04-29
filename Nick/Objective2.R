@@ -1,18 +1,4 @@
----
-title: "Objective2"
-author: "Nick Wilson"
-date: "4/23/2020"
-output: html_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-
-
-```{r, include=FALSE}
-
+# --------------------------------
 library(fivethirtyeight)
 library(tidyverse)
 library(lubridate)
@@ -21,12 +7,9 @@ library(RColorBrewer)
 data("classic_rock_raw_data")
 
 # head(classic_rock_raw_data)
+# --------------------------------
 
-```
-
-
-```{r, include=FALSE}
-
+# --------------------------------
 # separate the date and times
 crrd2 <- classic_rock_raw_data %>%
   mutate(
@@ -34,14 +17,13 @@ crrd2 <- classic_rock_raw_data %>%
     hour = hour(date_time),
     minute = minute(date_time),
     second = second(date_time)
-    )
+  )
 
 # head(crrd2)
+# --------------------------------
 
-```
 
-
-```{r, include=FALSE}
+# --------------------------------
 
 # Define the breaks
 
@@ -58,28 +40,28 @@ labels <- c("12 AM - 3 AM", "3 AM - 6 AM", "6 AM - 9 AM", "10 AM - 12 PM", "12 P
 # breaks <- c(seq(0,24,6))
 # labels <- c("12 AM - 6 AM", "6 AM - 12 PM", "12 PM - 6 PM", "6 PM - 12 PM" )
 
-```
+# --------------------------------
 
 
-```{r, include=FALSE}
+# --------------------------------
 
 # apply the values to each play
 crrd3 <- crrd2 %>%
   mutate(
     time_of_day = cut(hour
-                  ,breaks = breaks
-                  ,include.lowest = TRUE
-                  ,right = FALSE
-                  ,labels = labels
-                  )
+                      ,breaks = breaks
+                      ,include.lowest = TRUE
+                      ,right = FALSE
+                      ,labels = labels
+    )
   )
 
 # head(crrd3)
 
-```
+# --------------------------------
 
 
-```{r, fig.width=10}
+# --------------------------------
 
 # Number of total plays for each time of day
 
@@ -93,10 +75,10 @@ crrd3 %>%
   scale_fill_brewer(palette = "YlOrRd")
 
 
-```
+# --------------------------------
 
 
-```{r,fig.width=10}
+# --------------------------------
 
 song_plays_per_time_of_day <- crrd3 %>% 
   group_by(time_of_day, song) %>%
@@ -125,15 +107,15 @@ top_songs_per_time_of_day
 #   theme_minimal() + 
 #   scale_fill_brewer(palette = "YlOrRd")
 
-```
+# --------------------------------
 
 
-```{r, fig.width=10}
+# --------------------------------
 
 # when are the most popular songs featured most?
 
 # get the most popular songs
- top_songs_overall <- crrd3 %>% 
+top_songs_overall <- crrd3 %>% 
   group_by(song) %>% 
   summarise( n_plays = n() ) %>% 
   top_n(3, n_plays) %>%
@@ -149,12 +131,12 @@ top_songs_overall_over_time %>%
   theme_minimal() +
   scale_color_manual(values=c('#C8102E','#F1BE48', '#9B945F'))
 
-```
+# --------------------------------
 
 
 ### Artists
 
-```{r, fig.width=10}
+# ---------------------------------
 
 artist_plays_per_time_of_day <- crrd3 %>% 
   group_by(time_of_day, artist) %>%
@@ -180,10 +162,10 @@ top_artists %>%
   theme_minimal() + 
   scale_fill_brewer(palette = "YlOrRd")
 
-```
+# --------------------------------
 
 
-```{r,fig.width=10}
+# ---------------------------------
 
 # when are the most popular songs featured most?
 
@@ -196,4 +178,4 @@ top_artists_per_time_of_day %>%
   theme_minimal() +
   scale_color_manual(values=c('#C8102E','#F1BE48', '#9B945F', '#BE531C'))
 
-```
+
