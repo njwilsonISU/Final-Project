@@ -27,7 +27,7 @@ access_token <- get_spotify_access_token()
 
 morning_song <- top_songs_per_time_of_day %>% filter(time_of_day == "6 AM - 9 AM")
 
-morning_song_complete <- classic_rock_song_list %>% filter(song == morning_song$song)
+morning_song_complete <- classic_rock_song_list %>% filter(song %in% morning_song$song)
 
 artist <- morning_song_complete$artist
 artist_spotifyID <- get_artist_audio_features(artist)$artist_id[1]

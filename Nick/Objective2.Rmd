@@ -53,7 +53,7 @@ crrd2 <- classic_rock_raw_data %>%
 
 # by 3 hour period
 breaks <- c(seq(0,24,3))
-labels <- c("12 AM - 3 AM", "3 AM - 6 AM", "6 AM - 9 AM", "10 AM - 12 PM", "12 PM - 3 PM", "3 PM - 6 PM", "6 PM - 9 PM", "9 PM - 12 PM" )
+labels <- c("12 AM - 3 AM", "3 AM - 6 AM", "6 AM - 9 AM", "10 AM - 12 PM", "12 PM - 3 PM", "3 PM - 6 PM", "6 PM - 9 PM", "9 PM - 12 AM" )
 
 # # by 6 hour period
 # breaks <- c(seq(0,24,6))
@@ -156,7 +156,7 @@ top_songs_overall_over_time <- song_plays_per_time_of_day %>%
 
 top_songs_overall_over_time %>%
   ggplot(aes(x = time_of_day, y = percent, group = factor(song), color = factor(song))) + 
-  geom_line() + 
+  geom_line(size = 1) + 
   theme_minimal() +
   scale_color_manual(values=c('#C8102E','#F1BE48', '#9B945F')) + 
   labs(
@@ -164,6 +164,28 @@ top_songs_overall_over_time %>%
     x = "Time of Day",
     y = "Percent of Plays",
     color = "Song"
+    )
+
+```
+
+```{r,fig.width=10}
+
+top_morning_songs <- song_plays_per_time_of_day %>% 
+  filter(time_of_day == "6 AM - 9 AM") %>% 
+  top_n(5, n_plays)
+
+morning_song_complete <- song_plays_per_time_of_day %>% filter(song %in% top_morning_songs$song)
+
+morning_song_complete %>%
+  ggplot(aes(x = time_of_day, y = percent, group = factor(song), color = factor(song))) + 
+  geom_line(size = 1) + 
+  theme_minimal() +
+  scale_color_brewer(palette = "YlOrRd") + 
+  labs(
+    title = "Top morning(6 AM - 9 AM) songs",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    fill = "Song"
     )
 
 ```
@@ -209,7 +231,7 @@ top_artists_per_time_of_day %>%
 ```
 
 
-```{r, fig.width=10}
+```{r, fig.width=10, fig.height=6}
 
 # when are the most popular artists featured most?
 
@@ -226,7 +248,7 @@ top_artists_overall_over_time <- artist_plays_per_time_of_day %>%
 
 top_artists_overall_over_time %>%
   ggplot(aes(x = time_of_day, y = percent, group = factor(artist), color = factor(artist))) + 
-  geom_line() + 
+  geom_line(size = 1) + 
   theme_minimal() +
   scale_color_manual(values=c('#ff0000','#ff5a00','#ff9a00','#ffce00','#f0ff00')) + 
   labs(
