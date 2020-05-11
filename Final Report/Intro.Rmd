@@ -1,0 +1,68 @@
+---
+title: "Final Project Report"
+author: "Nick Wilson, Austin Collins, Haylee Weaver, Matthew Dickey"
+date: "5/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+## Abstract
+
+This project will work with the classic_rock_raw_data and classic_rock_song_list datasets found inside the FiveThirtyEight R Library. These datasets contain information about the songs that were featured on 25 classic rock radio stations during a week in June of 2014. Using the information provided by these datasets, we will look further into 4 areas of interest; the most popular songs and artists, the differences between each of the stations, the words and characters used in song titles, and the songs that are played at different times throughout the day. 
+
+## Data Summary
+This project uses 2 datasets provided by the ‘fivethirtyeight’ package: classic_rock_raw_data and classic_rock_song_list. The description of these datasets and the variables they contain can be seen below.  
+
+classic_rock_raw_data: Each row represents a song played on the radio  
+- song: Song name  
+- artist: Artist name  
+- callsign: Station callsign  
+- time: Time of song play in seconds elapsed since Jan. 1, 1970  
+- date_time: Date/time of song play  
+- unique_id: Unique ID of song  
+- combined: song + artist name combined  
+
+classic_rock_song_list: Each row represents a unique song  
+- song: Song name  
+- artist: Artist name  
+- release_year: Year the song was released  
+- combined: song + artist name combined  
+- has_year: If the release year was included - logical  
+- playcount: Number of times the song was played  
+- playcount_has_year: Number of times the song was played if a year was found  
+
+```{r, include=FALSE}
+
+library(fivethirtyeight)
+library(tidyverse)
+library(lubridate)
+library(RColorBrewer)
+
+data("classic_rock_raw_data")
+data("classic_rock_song_list")
+
+```
+
+
+```{r}
+
+str(classic_rock_raw_data)
+str(classic_rock_song_list)
+
+```
+  
+## Objectives  
+
+Using the datasets mentioned above, this project aims to accomplish 4 primary objectives  
+
+1. The first objective is to analyze the most popular songs and artists by decade. This objective shows us not what was most popular at the time of release but what songs/artists have held on to their popularity and are played often today.  
+
+2. For the second objective, we will analyze the most popular songs and artists for different times of day. The objective is to determine whether some songs are played more at some times of the day versus others.  
+
+3. The third objective will be to look at the radio stations that played the songs and find which radio stations played the most songs and also which songs were played the most on the radio. We will also look to find songs that were played multiple times by the same radio station.  
+
+4. The last objective is to explore the differences and similarities in song titles. We will look into different words/phrases that show up most commonly in song titles. We will also look at how many song titles are identical to other songs, and explore what artist has the most popular song with that title.  

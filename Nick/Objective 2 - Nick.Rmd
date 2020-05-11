@@ -1,0 +1,364 @@
+---
+title: "Objective 2"
+author: "Nick"
+date: "4/23/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+
+library(fivethirtyeight)
+library(tidyverse)
+library(lubridate)
+library(RColorBrewer)
+library(formattable)
+
+data("classic_rock_raw_data")
+data("classic_rock_song_list")
+
+```
+
+### **Objective 2**
+#### Analyze the music played at different times of the day  
+
+The first step in accomplishing this objective is to work with the date_time variable in the classic_rock_raw_data dataset. We are only interested in the time, so we get the hour, minute, and seconds value and create new variables to store these values.  
+```{r}
+
+# separate the date and times
+crrd2 <- classic_rock_raw_data %>%
+  mutate(
+    weekday = wday(date_time, label = TRUE),
+    hour = hour(date_time),
+    minute = minute(date_time),
+    second = second(date_time)
+    )
+
+```
+
+The next step is to define the time periods. While there are a number of ways to break up the day, we chose to go with 3 hour time periods because it seemed to best capture how the radio stations naturally break up the day.
+
+```{r}
+
+# # by hour
+# breaks <- c(seq(0,24,1))
+# labels <- c("12 AM", "1 AM", "2 AM", "3 AM", "4 AM", "5 AM", "6 AM", "7 AM", "8 AM", "9 AM", "10 AM", "11 AM", 
+#             "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM", "7 PM", "8 PM", "9 PM", "10 PM", "11 PM" )
+
+# by 3 hour period
+breaks <- c(seq(0,24,3))
+labels <- c("12 AM - 3 AM", "3 AM - 6 AM", "6 AM - 9 AM", "10 AM - 12 PM", "12 PM - 3 PM", "3 PM - 6 PM", "6 PM - 9 PM", "9 PM - 12 AM" )
+
+# # by 6 hour period
+# breaks <- c(seq(0,24,6))
+# labels <- c("12 AM - 6 AM", "6 AM - 12 PM", "12 PM - 6 PM", "6 PM - 12 PM" )
+
+```
+
+Then create a new variable *time_of_day* that shows which time period each of the the song plays occured in based on the hour variable. Since we are using the hour variable and because of the way the breaks are set up, if a song was played at 2:59 PM it would belong to the 12 PM - 3 PM time period, but if it was played at 3:00 PM, then it would belong to the 3 PM - 6 PM time period.  
+
+```{r, include=FALSE}
+
+crrd3 <- crrd2 %>%
+  mutate(
+    time_of_day = cut(hour
+                  ,breaks = breaks
+                  ,include.lowest = TRUE
+                  ,right = FALSE
+                  ,labels = labels
+                  )
+  )
+
+```
+
+Now that we have the data how we want it, we can start answering the questions.  
+
+**Question 1: When is the most music played?**  
+To answer this question, we first group the data by time_of_day and count the total number of songs that were played during each time period. Then we use a bar chart to compare each time of day.
+
+```{r, fig.width=8}
+
+crrd3 %>% 
+  group_by(time_of_day) %>%
+  summarise( songs_played = n(), percent = 100*songs_played/sum(songs_played)) %>%
+  ggplot(aes(x = time_of_day, y = songs_played, fill = time_of_day)) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') + 
+  theme_minimal() + 
+  scale_fill_brewer(palette = "YlOrRd") + 
+  theme(legend.position = "none") + 
+  labs(
+    title = "Number of songs played during each time of day",
+    x = "Time of Day",
+    y = "Songs Played",
+    fill = ""
+    )
+
+```
+
+From this bar chart we can see that the 6 PM - 9 PM time period dominates the rest in terms of the number of songs that are played, while the other time period are relatively equal.
+
+**Question 2: What are the most played songs for each time of the day?**  
+First, we group the data by the song and the time of day and get the number of times any particular song was played during each of the time periods. Furthermore, we calculate the percentage of the total number of plays that each song accounts for, for any given time of day. The importance of this variable is shown later.
+
+```{r}
+
+song_plays_per_time_of_day <- crrd3 %>% 
+  group_by(time_of_day, song) %>%
+  summarise( n_plays = n())
+
+song_plays_per_time_of_day <- song_plays_per_time_of_day %>%
+  mutate( percent = 100*n_plays/sum(n_plays) )
+
+```
+
+Then we get the song with the most plays from each time of the day.
+
+```{r}
+
+top_songs_per_time_of_day <- song_plays_per_time_of_day %>% 
+  top_n(1, n_plays)
+
+top_songs_per_time_of_day
+
+```
+
+This table shows the top played songs for each time of the day along with the number of times they were played during that time period. One of the interesting things shown in this table is that the only song to be the top played song for more than one time period is "All Along the Watchtower", and the 2 time periods that it tops are during the middle of the night. This table also shows the importance of the percent varaible, because while "Dream On" has the most number of plays on the list, the time period that it tops also has by far the most overall songs played so its percent is pretty comparable to the rest. For this reason, the percent variable is usually a better indicator of how much a song is favored for a specific time period.
+
+**Question 3: Which of the most played songs is *morning music*?**  
+For this question, we interested in the overall top played songs so, to begin, we must find those songs. To do this we group by song, count how many times each song was played, and take the top 3 songs.
+
+```{r}
+
+ top_songs_overall <- crrd3 %>% 
+  group_by(song) %>% 
+  summarise( n_plays = n() ) %>% 
+  top_n(3, n_plays) %>%
+  arrange(desc(n_plays))
+
+```
+
+Then we take the dataset that contains the number of times each song was played during each time of day, and filter it to only show these overall top 3 songs. Then we use this to graph the percent of plays that each of the top 3 songs for each of the times of the day.
+
+```{r, fig.width=10}
+
+top_songs_overall_over_time <- song_plays_per_time_of_day %>%
+  filter(song %in% top_songs_overall$song)
+
+top_songs_overall_over_time %>%
+  ggplot(aes(x = time_of_day, y = percent, group = factor(song), color = factor(song))) + 
+  geom_line(size = 1) + 
+  theme_minimal() +
+  scale_color_manual(values=c('#C8102E','#F1BE48', '#9B945F')) + 
+  labs(
+    title = "Top songs played throughout the day",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    color = "Song"
+    )
+
+```
+
+With each song being represented by a different color line, this graph shows the how each of the top 3 songs performed at different times of the day. This graph unfortunately does not prove any of these songs to be "morning music" in particular but it does confirm the fact that "All Along the Watchtower" seems to be abnormally favored in the middle of the night, especially considering that the other 2 top songs see a pretty significant decrease in popularity during those times. 
+
+**Question 4: What are the most played artists for each time of the day?**  
+The process for answering this question is very similar to that of Question 2 except we group by artist instead of song. Also, with the expectation that there will be less variety between the top values of each of the times of the day for the artists than for the songs, instead of getting just 1 value from each time of day we get the top 3 artists.  
+
+```{r,fig.width=10}
+
+artist_plays_per_time_of_day <- crrd3 %>% 
+  group_by(time_of_day, artist) %>%
+  summarise( n_plays = n() )
+
+artist_plays_per_time_of_day <- artist_plays_per_time_of_day %>%
+  mutate( percent = 100*n_plays/sum(n_plays) )
+
+# Get top values from each 
+top_artists_per_time_of_day <- artist_plays_per_time_of_day %>% 
+  top_n(3, n_plays)
+
+```
+
+This also allows for us to use a bar chart instead of a table, and map the fill of the bars to the artists. Again, we account for the differences between the times of the day by using the percent variable instead of the n_plays.
+
+```{r,fig.width=10}
+
+# most popular artists for each time of day by % of total plays
+top_artists_per_time_of_day %>%
+  ggplot(aes(x = time_of_day, y = percent, fill = factor(artist), order = time_of_day)) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd") + 
+  labs(
+    title = "Top artists for each time of the day",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    fill = "Artist"
+    )
+
+```
+
+From this chart we can see that only 4 artists appear in the top 3 artists for any given time of day. A few other interesting things we can see: Led Zeppelin is the most played artist for any of the times of the day excpet 1 where they share the top spot, Pink Floyd only comes into the top 3 during the 2 middle-of-the-night time periods, and the time period where the top 3 artists hold the least amount of the total plays is from 9 PM - 12 AM.  
+
+**Question 5: When are the overall top artists played most?**  
+First we find the top 5 most played artists overall and get the amount of times each of them was played throughout the day.    
+
+```{r, fig.width=10, fig.height=6}
+
+# get the most popular artists
+ top_artists_overall <- crrd3 %>% 
+  group_by(artist) %>% 
+  summarise( n_plays = n() ) %>% 
+  top_n(5, n_plays) %>%
+  arrange(desc(n_plays))
+
+top_artists_overall_over_time <- artist_plays_per_time_of_day %>%
+  filter(artist %in% top_artists_overall$artist)
+
+```
+
+Then we graph it to compare how each artist performed throughout the day.  
+
+```{r, fig.width=10, fig.height=6}
+
+top_artists_overall_over_time %>%
+  ggplot(aes(x = time_of_day, y = percent, group = factor(artist), color = factor(artist))) + 
+  geom_line(size = 1) + 
+  theme_minimal() +
+  scale_color_manual(values=c('#ff0000','#ff5a00','#ff9a00','#ffce00','#f0ff00')) + 
+  labs(
+    title = "Top artists played throughout the day",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    color = "Artist"
+    )
+
+```
+
+In this line graph, we again see that Led Zeppelin leads the pack throughout the day, and especially from 3 PM to 6PM. One other interesting thing about this graph is how the lines for Pink Floyd and Tom Petty & the Heartbreakers have almost identical behaviour throughout the times of the day, and how they both take a big dip in the percentage of total plays they had during the 6 AM - 9 AM time period.
+
+<br>
+
+# Do not include 
+
+```{r,fig.width=10}
+
+top_morning_songs <- song_plays_per_time_of_day %>% 
+  filter(time_of_day == "6 AM - 9 AM") %>% 
+  top_n(5, n_plays)
+
+morning_song_complete <- song_plays_per_time_of_day %>% filter(song %in% top_morning_songs$song)
+
+morning_song_complete %>%
+  ggplot(aes(x = time_of_day, y = percent, group = factor(song), color = factor(song))) + 
+  geom_line(size = 1) + 
+  theme_minimal() +
+  scale_color_brewer(palette = "YlOrRd") + 
+  labs(
+    title = "Top morning(6 AM - 9 AM) songs",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    color = "Song"
+    )
+
+```
+
+**Question 4: What are the most played artists for each time of the day?**  
+The process for answering this question is very similar to that of Question 2 except we group by artist instead of song. Also, with the expectation that there will be less variety between the top values of each of the times of the day for the artists than for the songs, instead of getting just 1 value from each time of day we get the top 3 artists.
+
+```{r,fig.width=10}
+
+artist_plays_per_time_of_day <- crrd3 %>% 
+  group_by(time_of_day, artist) %>%
+  summarise( n_plays = n() )
+
+artist_plays_per_time_of_day <- artist_plays_per_time_of_day %>%
+  mutate( percent = 100*n_plays/sum(n_plays) )
+
+# Get top values from each 
+top_artists_per_time_of_day <- artist_plays_per_time_of_day %>% 
+  top_n(3, n_plays)
+
+```
+This also allows for us to use a bar chart instead of a table, and map the fill of the bars to the artists. Again, we account for the differences between the times of the day by using the percent variable instead of the n_plays.
+
+```{r,fig.width=10}
+
+# most popular artists for each time of day by % of total plays
+top_artists_per_time_of_day %>%
+  ggplot(aes(x = time_of_day, y = percent, fill = factor(artist), order = time_of_day)) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd") + 
+  labs(
+    title = "Top artists for each time of the day",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    fill = "Artist"
+    )
+
+```
+From this chart we can see that only 4 artists appear in the top 3 artists for any given time of day. A few other interesting things we can see: Led Zeppelin is the most played artist for any of the times of the day excpet 1 where they share the top spot, Pink Floyd only comes into the top 3 during the 2 middle-of-the-night time periods, and the time period where the top 3 artists hold the least amount of the total plays is from 9 PM - 12 AM.  
+
+**Question 5: When are the overall top artists played most?**  
+First we find the top 5 most played artists overall and get the amount of times each of them was played throughout the day.    
+
+```{r, fig.width=10, fig.height=6}
+
+# get the most popular artists
+ top_artists_overall <- crrd3 %>% 
+  group_by(artist) %>% 
+  summarise( n_plays = n() ) %>% 
+  top_n(5, n_plays) %>%
+  arrange(desc(n_plays))
+
+top_artists_overall_over_time <- artist_plays_per_time_of_day %>%
+  filter(artist %in% top_artists_overall$artist)
+
+```
+
+Then we graph it to compare how each artist performed throughout the day.  
+
+```{r, fig.width=10, fig.height=6}
+
+top_artists_overall_over_time %>%
+  ggplot(aes(x = time_of_day, y = percent, group = factor(artist), color = factor(artist))) + 
+  geom_line(size = 1) + 
+  theme_minimal() +
+  scale_color_manual(values=c('#ff0000','#ff5a00','#ff9a00','#ffce00','#f0ff00')) + 
+  labs(
+    title = "Top artists played throughout the day",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    color = "Artist"
+    )
+
+```
+
+In this line graph, we again see that Led Zeppelin leads the pack throughout the day, and especially from 3 PM to 6PM. One other interesting thing about this graph is how the lines for Pink Floyd and Tom Petty & the Heartbreakers have almost identical behaviour throughout the times of the day, and how they both take a big dip in the percentage of total plays they had during the 6 AM - 9 AM time period.
+
+# Do not include 
+
+```{r,fig.width=10}
+
+top_morning_songs <- song_plays_per_time_of_day %>% 
+  filter(time_of_day == "6 AM - 9 AM") %>% 
+  top_n(5, n_plays)
+
+morning_song_complete <- song_plays_per_time_of_day %>% filter(song %in% top_morning_songs$song)
+
+morning_song_complete %>%
+  ggplot(aes(x = time_of_day, y = percent, group = factor(song), color = factor(song))) + 
+  geom_line(size = 1) + 
+  theme_minimal() +
+  scale_color_brewer(palette = "YlOrRd") + 
+  labs(
+    title = "Top morning(6 AM - 9 AM) songs",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    color = "Song"
+    )
+
+```

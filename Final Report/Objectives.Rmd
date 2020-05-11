@@ -1,0 +1,1002 @@
+---
+title: "Final Project Report"
+author: "Nick Wilson, Austin Collins, Haylee Weaver, Matthew Dickey"
+date: "5/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Implementation
+
+The steps taken to accomplish each of the objectives are given below. The following packages and their various functions are used:  
+- fivethirtyeight  
+- tidyverse  
+- lubridate  
+- RColorBrewer  
+- formattable    
+```{r, include=FALSE}
+
+library(fivethirtyeight)
+library(tidyverse)
+library(lubridate)
+library(RColorBrewer)
+library(formattable)
+
+data("classic_rock_raw_data")
+data("classic_rock_song_list")
+
+```
+
+
+### **Objective 1**
+#### The first objective is to analyze the most popular songs and artists by decade. This objective shows us not what was most popular at the time of release but what songs/artists have held on to their popularity and are played often today.  
+
+**Question 1: What are the most played songs for each decade?**  
+The first step to answering this question is to create intervals of our release_year variable using the cut function.
+```{r}
+
+rock <- classic_rock_song_list
+
+# Cutting our Release dates into intervals to show decades of Rock.
+rock$release_year <- cut(
+    rock$release_year,
+    breaks = c(1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020),
+    dig.lab = 4
+  ) 
+
+```
+
+Then we are going to filter our results by has_year to make sure the song has a release year, then filter by our decade, group by song, and finally tally the playcounts and display the top 9 songs.
+
+```{r}
+
+rock %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1950,1960]") %>%
+  group_by(song) %>%
+  tally(playcount) %>%
+  arrange_( ~ desc(n)) %>%
+  top_n(9) 
+
+```
+
+Next we will be adding the ggplot component to display our findings in a barchart. We are using a barchart with flipped coordinates to properly display song titles and an Iowa State color scheme to match our presentation. 
+
+```{r}
+rock %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1950,1960]") %>%
+  group_by(artist) %>%
+  tally(playcount) %>%
+  arrange_( ~ desc(n)) %>%
+  top_n(9) %>%
+  ggplot(aes(
+    x = reorder(artist, n),
+    y = n,
+    fill = factor(artist)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Artist",  title = "1950s Playcount by Artist") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+```
+
+All of song graphs below
+
+```{r}
+rock %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1950,1960]") %>%
+  group_by(artist) %>%
+  tally(playcount) %>%
+  arrange_( ~ desc(n)) %>%
+  top_n(9) %>%
+  ggplot(aes(
+    x = reorder(artist, n),
+    y = n,
+    fill = factor(artist)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Artist",  title = "1950s Playcount by Artist") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+
+rock  %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1960,1970]") %>%
+  group_by(artist) %>%
+  tally(playcount) %>%
+  arrange_( ~ desc(n)) %>%
+  top_n(9) %>%
+  ggplot(aes(
+    x = reorder(artist, n),
+    y = n,
+    fill = factor(artist)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Artist",  title = "1960s Playcount by Artist") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+rock  %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1970,1980]") %>%
+  group_by(artist) %>%
+  tally(playcount) %>%
+  arrange_( ~ desc(n)) %>%
+  top_n(9) %>%
+  ggplot(aes(
+    x = reorder(artist, n),
+    y = n,
+    fill = factor(artist)
+  )) +
+  
+  
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Artist",  title = "1970s Playcount by Artist") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+
+rock  %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1980,1990]") %>%
+  group_by(artist) %>%
+  tally(playcount) %>%
+  arrange_( ~ desc(n)) %>%
+  top_n(9) %>%
+  ggplot(aes(
+    x = reorder(artist, n),
+    y = n,
+    fill = factor(artist)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Artist",  title = "1980s Playcount by Artist") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+
+rock  %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1990,2000]") %>%
+  group_by(artist) %>%
+  tally(playcount) %>%
+  arrange_( ~ desc(n)) %>%
+  top_n(9) %>%
+  ggplot(aes(
+    x = reorder(artist, n),
+    y = n,
+    fill = factor(artist)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Artist",  title = "1990s Playcount by Artist") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+
+
+rock %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(2000,2010]") %>%
+  group_by(artist) %>%
+  tally(playcount) %>%
+  arrange_( ~ desc(n)) %>%
+  top_n(7) %>%
+  ggplot(aes(
+    x = reorder(artist, n),
+    y = n,
+    fill = factor(artist)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Artist",  title = "2000s Playcount by Artist") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+
+rock %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(2010,2020]") %>%
+  group_by(artist) %>%
+  tally(playcount) %>%
+  arrange_( ~ desc(n)) %>%
+  top_n(9) %>%
+  ggplot(aes(
+    x = reorder(artist, n),
+    y = n,
+    fill = factor(artist)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Artist",  title = "2010s Playcount by Artist") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+
+```
+
+**Question 2: What are the most played artists for each decade?**
+We will be doing a similar set of steps to create graphs based on artists. Starting from our cut decades, filtering by has_year and release_year, grouping by artist, tallying playcount, displaying top 9 artists
+
+```{r}
+rock %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1950,1960]") %>%
+  group_by(artist) %>%
+  tally(playcount) %>%
+  arrange_( ~ desc(n)) %>%
+  top_n(9) 
+
+```
+
+Once again adding the ggplot component to display our findings in a barchart. We are using a barchart with flipped coordinates to properly display artist names and an Iowa State color scheme to match our presentation. 
+```{r}
+rock %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1950,1960]") %>%
+  group_by(artist) %>%
+  tally(playcount) %>%
+  arrange_( ~ desc(n)) %>%
+  top_n(9) %>%
+  ggplot(aes(
+    x = reorder(artist, n),
+    y = n,
+    fill = factor(artist)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Artist",  title = "1950s Playcount by Artist") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+```
+
+All of our artist graphs below
+
+```{r}
+rock %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1950,1960]") %>%
+  group_by(song) %>%
+  tally(playcount) %>%
+  arrange_(~ desc(n)) %>%
+  top_n(8) %>%
+  ggplot(aes(
+    x = reorder(song, n),
+    y = n,
+    fill = factor(song)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  
+  coord_flip() +
+  labs(y = "Playcount", x = "Song",  title = "1950s Playcount by Song") +
+  
+  theme_minimal() +
+  
+  scale_fill_brewer(palette = "YlOrRd")
+
+rock %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1960,1970]") %>%
+  group_by(song) %>%
+  tally(playcount) %>%
+  arrange_(~ desc(n)) %>%
+  top_n(8) %>%
+  ggplot(aes(
+    x = reorder(song, n),
+    y = n,
+    fill = factor(song)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Song",  title = "1960s Playcount by Song") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+rock %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1970,1980]") %>%
+  group_by(song) %>%
+  tally(playcount) %>%
+  arrange_(~ desc(n)) %>%
+  top_n(8) %>%
+  ggplot(aes(
+    x = reorder(song, n),
+    y = n,
+    fill = factor(song)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Song",  title = "1970s Playcount by Song") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+rock  %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1980,1990]") %>%
+  group_by(song) %>%
+  tally(playcount) %>%
+  arrange_(~ desc(n)) %>%
+  top_n(8) %>%
+  ggplot(aes(
+    x = reorder(song, n),
+    y = n,
+    fill = factor(song)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Song",  title = "1980s Playcount by Song") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+rock  %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1990,2000]") %>%
+  group_by(song) %>%
+  tally(playcount) %>%
+  arrange_(~ desc(n)) %>%
+  top_n(8) %>%
+  ggplot(aes(
+    x = reorder(song, n),
+    y = n,
+    fill = factor(song)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Song",  title = "1990s Playcount by Song") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+rock  %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(2000,2010]") %>%
+  group_by(song) %>%
+  tally(playcount) %>%
+  arrange_(~ desc(n)) %>%
+  top_n(8) %>%
+  ggplot(aes(
+    x = reorder(song, n),
+    y = n,
+    fill = factor(song)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Song",  title = "2000s Playcount by Song") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+rock %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(2010,2020]") %>%
+  group_by(song) %>%
+  tally(playcount) %>%
+  arrange_(~ desc(n)) %>%
+  top_n(8) %>%
+  ggplot(aes(
+    x = reorder(song, n),
+    y = n,
+    fill = factor(song)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Song",  title = "2010s Playcount by Song") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+
+
+```
+
+
+**Question 3: Which decade had the most plays?**
+To answer our last question of the most played decade, instead of grouping by artist or song we will be grouping by decade, tallying playcounts and displaying the results in ggplot with flipped coordinates to properly display decades and an Iowa State color scheme to match our presentation.
+
+```{r}
+rock %>%
+  filter(has_year == TRUE) %>%
+  filter(release_year == "(1950,1960]") %>%
+  group_by(artist) %>%
+  tally(playcount) %>%
+  arrange_( ~ desc(n)) %>%
+  top_n(9) %>%
+  ggplot(aes(
+    x = reorder(artist, n),
+    y = n,
+    fill = factor(artist)
+  )) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  labs(y = "Playcount", x = "Artist",  title = "1950s Playcount by Artist") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd")
+```
+
+<br>
+
+### **Objective 2**
+#### Analyze the music played at different times of the day  
+
+The first step in accomplishing this objective is to work with the date_time variable in the classic_rock_raw_data dataset. We are only interested in the time, so we get the hour, minute, and seconds value and create new variables to store these values.  
+```{r}
+
+# separate the date and times
+crrd2 <- classic_rock_raw_data %>%
+  mutate(
+    weekday = wday(date_time, label = TRUE),
+    hour = hour(date_time),
+    minute = minute(date_time),
+    second = second(date_time)
+    )
+
+```
+
+The next step is to define the time periods. While there are a number of ways to break up the day, we chose to go with 3 hour time periods because it seemed to best capture how the radio stations naturally break up the day.
+
+```{r}
+
+# # by hour
+# breaks <- c(seq(0,24,1))
+# labels <- c("12 AM", "1 AM", "2 AM", "3 AM", "4 AM", "5 AM", "6 AM", "7 AM", "8 AM", "9 AM", "10 AM", "11 AM", 
+#             "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM", "7 PM", "8 PM", "9 PM", "10 PM", "11 PM" )
+
+# by 3 hour period
+breaks <- c(seq(0,24,3))
+labels <- c("12 AM - 3 AM", "3 AM - 6 AM", "6 AM - 9 AM", "10 AM - 12 PM", "12 PM - 3 PM", "3 PM - 6 PM", "6 PM - 9 PM", "9 PM - 12 AM" )
+
+# # by 6 hour period
+# breaks <- c(seq(0,24,6))
+# labels <- c("12 AM - 6 AM", "6 AM - 12 PM", "12 PM - 6 PM", "6 PM - 12 PM" )
+
+```
+
+Then create a new variable *time_of_day* that shows which time period each of the the song plays occured in based on the hour variable. Since we are using the hour variable and because of the way the breaks are set up, if a song was played at 2:59 PM it would belong to the 12 PM - 3 PM time period, but if it was played at 3:00 PM, then it would belong to the 3 PM - 6 PM time period.  
+
+```{r, include=FALSE}
+
+crrd3 <- crrd2 %>%
+  mutate(
+    time_of_day = cut(hour
+                  ,breaks = breaks
+                  ,include.lowest = TRUE
+                  ,right = FALSE
+                  ,labels = labels
+                  )
+  )
+
+```
+
+Now that we have the data how we want it, we can start answering the questions.  
+
+**Question 1: When is the most music played?**  
+To answer this question, we first group the data by time_of_day and count the total number of songs that were played during each time period. Then we use a bar chart to compare each time of day.
+
+```{r, fig.width=8}
+
+crrd3 %>% 
+  group_by(time_of_day) %>%
+  summarise( songs_played = n(), percent = 100*songs_played/sum(songs_played)) %>%
+  ggplot(aes(x = time_of_day, y = songs_played, fill = time_of_day)) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') + 
+  theme_minimal() + 
+  scale_fill_brewer(palette = "YlOrRd") + 
+  theme(legend.position = "none") + 
+  labs(
+    title = "Number of songs played during each time of day",
+    x = "Time of Day",
+    y = "Songs Played",
+    fill = ""
+    )
+
+```
+
+From this bar chart we can see that the 6 PM - 9 PM time period dominates the rest in terms of the number of songs that are played, while the other time period are relatively equal.
+
+**Question 2: What are the most played songs for each time of the day?**  
+First, we group the data by the song and the time of day and get the number of times any particular song was played during each of the time periods. Furthermore, we calculate the percentage of the total number of plays that each song accounts for, for any given time of day. The importance of this variable is shown later.
+
+```{r}
+
+song_plays_per_time_of_day <- crrd3 %>% 
+  group_by(time_of_day, song) %>%
+  summarise( n_plays = n())
+
+song_plays_per_time_of_day <- song_plays_per_time_of_day %>%
+  mutate( percent = 100*n_plays/sum(n_plays) )
+
+```
+
+Then we get the song with the most plays from each time of the day.
+
+```{r}
+
+top_songs_per_time_of_day <- song_plays_per_time_of_day %>% 
+  top_n(1, n_plays)
+
+top_songs_per_time_of_day
+
+```
+
+This table shows the top played songs for each time of the day along with the number of times they were played during that time period. One of the interesting things shown in this table is that the only song to be the top played song for more than one time period is "All Along the Watchtower", and the 2 time periods that it tops are during the middle of the night. This table also shows the importance of the percent varaible, because while "Dream On" has the most number of plays on the list, the time period that it tops also has by far the most overall songs played so its percent is pretty comparable to the rest. For this reason, the percent variable is usually a better indicator of how much a song is favored for a specific time period.
+
+**Question 3: Which of the most played songs is *morning music*?**  
+For this question, we interested in the overall top played songs so, to begin, we must find those songs. To do this we group by song, count how many times each song was played, and take the top 3 songs.
+
+```{r}
+
+ top_songs_overall <- crrd3 %>% 
+  group_by(song) %>% 
+  summarise( n_plays = n() ) %>% 
+  top_n(3, n_plays) %>%
+  arrange(desc(n_plays))
+
+```
+
+Then we take the dataset that contains the number of times each song was played during each time of day, and filter it to only show these overall top 3 songs. Then we use this to graph the percent of plays that each of the top 3 songs for each of the times of the day.
+
+```{r, fig.width=10}
+
+top_songs_overall_over_time <- song_plays_per_time_of_day %>%
+  filter(song %in% top_songs_overall$song)
+
+top_songs_overall_over_time %>%
+  ggplot(aes(x = time_of_day, y = percent, group = factor(song), color = factor(song))) + 
+  geom_line(size = 1) + 
+  theme_minimal() +
+  scale_color_manual(values=c('#C8102E','#F1BE48', '#9B945F')) + 
+  labs(
+    title = "Top songs played throughout the day",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    color = "Song"
+    )
+
+```
+
+With each song being represented by a different color line, this graph shows the how each of the top 3 songs performed at different times of the day. This graph unfortunately does not prove any of these songs to be "morning music" in particular but it does confirm the fact that "All Along the Watchtower" seems to be abnormally favored in the middle of the night, especially considering that the other 2 top songs see a pretty significant decrease in popularity during those times. 
+
+**Question 4: What are the most played artists for each time of the day?**  
+The process for answering this question is very similar to that of Question 2 except we group by artist instead of song. Also, with the expectation that there will be less variety between the top values of each of the times of the day for the artists than for the songs, instead of getting just 1 value from each time of day we get the top 3 artists.  
+
+```{r,fig.width=10}
+
+artist_plays_per_time_of_day <- crrd3 %>% 
+  group_by(time_of_day, artist) %>%
+  summarise( n_plays = n() )
+
+artist_plays_per_time_of_day <- artist_plays_per_time_of_day %>%
+  mutate( percent = 100*n_plays/sum(n_plays) )
+
+# Get top values from each 
+top_artists_per_time_of_day <- artist_plays_per_time_of_day %>% 
+  top_n(3, n_plays)
+
+```
+
+This also allows for us to use a bar chart instead of a table, and map the fill of the bars to the artists. Again, we account for the differences between the times of the day by using the percent variable instead of the n_plays.
+
+```{r,fig.width=10}
+
+# most popular artists for each time of day by % of total plays
+top_artists_per_time_of_day %>%
+  ggplot(aes(x = time_of_day, y = percent, fill = factor(artist), order = time_of_day)) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd") + 
+  labs(
+    title = "Top artists for each time of the day",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    fill = "Artist"
+    )
+
+```
+
+From this chart we can see that only 4 artists appear in the top 3 artists for any given time of day. A few other interesting things we can see: Led Zeppelin is the most played artist for any of the times of the day excpet 1 where they share the top spot, Pink Floyd only comes into the top 3 during the 2 middle-of-the-night time periods, and the time period where the top 3 artists hold the least amount of the total plays is from 9 PM - 12 AM.  
+
+**Question 5: When are the overall top artists played most?**  
+First we find the top 5 most played artists overall and get the amount of times each of them was played throughout the day.    
+
+```{r, fig.width=10, fig.height=6}
+
+# get the most popular artists
+ top_artists_overall <- crrd3 %>% 
+  group_by(artist) %>% 
+  summarise( n_plays = n() ) %>% 
+  top_n(5, n_plays) %>%
+  arrange(desc(n_plays))
+
+top_artists_overall_over_time <- artist_plays_per_time_of_day %>%
+  filter(artist %in% top_artists_overall$artist)
+
+```
+
+Then we graph it to compare how each artist performed throughout the day.  
+
+```{r, fig.width=10, fig.height=6}
+
+top_artists_overall_over_time %>%
+  ggplot(aes(x = time_of_day, y = percent, group = factor(artist), color = factor(artist))) + 
+  geom_line(size = 1) + 
+  theme_minimal() +
+  scale_color_manual(values=c('#ff0000','#ff5a00','#ff9a00','#ffce00','#f0ff00')) + 
+  labs(
+    title = "Top artists played throughout the day",
+    x = "Time of Day",
+    y = "Percent of Plays",
+    color = "Artist"
+    )
+
+```
+
+In this line graph, we again see that Led Zeppelin leads the pack throughout the day, and especially from 3 PM to 6PM. One other interesting thing about this graph is how the lines for Pink Floyd and Tom Petty & the Heartbreakers have almost identical behaviour throughout the times of the day, and how they both take a big dip in the percentage of total plays they had during the 6 AM - 9 AM time period.
+
+<br>
+
+### **Objective 3**
+#### Compare the music played on different radio stations  
+
+**Question 1: What Radio Stations played the most music?**  
+
+The first step to answering this question is to group the data by the different radio stations using the variable "callsign". After the data is grouped together we counted the number of times each callsign showed up in the data. After the callsigns were counted, we arranged them in descending order and renamed the count variable to make the table easier to read and understand.
+```{r}
+
+radio <- classic_rock_raw_data %>% 
+ group_by(callsign) %>% 
+ count(callsign) %>% 
+ arrange(desc(n)) %>% 
+ rename("songs played" = n)
+
+```
+
+Then we create a table of this new dataset "radio" using formattable just to make it look a little nicer.
+
+```{r}
+
+formattable(radio, align = c("l","r"))
+
+```
+
+This table shows the number of songs played by each radio station over the sampled week. The top 3 stations by number of songs played: "KSEG", "WXGL", and "WCSX" will be further explored in later parts of the project. 
+<br>
+
+**Question 2: What were the most repeated songs by a single radio station?**
+
+To answer this question we again started with grouping the data by "callsign". After that we counted the number of times each song appeared in each group. We arranged the data set in descending order and filtered at n>=13 because that was the cutoff for the top 5.
+```{r}
+
+songs_by_radio <- classic_rock_raw_data %>% 
+ group_by(callsign) %>% 
+ count(song) %>% 
+ arrange(desc(n)) %>% 
+ filter(n >= 13)
+
+```
+
+To create a graph for the dataset "songs_by_radio" we used ggplot to make a bar graph using the song title as the categorical variable and the number of times the song was played over the week as the quantitative variable. After that we used scale_fill_brewer to give our graphs a consistent theme. Finally we added a title and axis lables to make the graph easier to read and understand.
+
+```{r}
+
+ggplot(songs_by_radio, aes(x= reorder(song, n), y = n, fill = callsign)) + 
+ 
+ geom_bar(stat = 'identity') + 
+ coord_flip() + 
+ theme_minimal() + 
+ scale_fill_brewer(palette = "YlOrRd") + 
+ ggtitle("Most Common Song and Station Combination") + 
+ labs(y = "Times Played", x = "Song")
+
+```
+
+This graph shows the 5 most played songs by a single radio station over the duration of the sampled week. There was a three way tie for 4th, so 6 songs are listed. "More than a Feeling" was played 15 times by WXGL which was the most times any radio station played a single song during the sampled week. "All Along the Watchtower" made the top 5 with 2 different radio stations.
+
+**Question 3: What were the most repeated artists by a single radio station?**
+
+To answer this question we repeated the steps used to solve question 2, but counted the times the same artist appeared in each group instead of songs. We filtered the data >= 90 to obtain the top 5
+```{r}
+
+artists_by_radio <- classic_rock_raw_data %>% 
+ group_by(callsign) %>% 
+ count(artist) %>% 
+ arrange(desc(n)) %>% 
+ filter(n >= 90)
+
+```
+
+TO create this graph we again used a very similar set of steps to create the graph as we did in question 2. This time we used the "artists_by_radio:" data set instead of the "songs_by_radio" data set.
+```{r}
+
+ggplot(artists_by_radio, aes(x= reorder(artist, n), y = n, fill = callsign)) + 
+ geom_bar(stat = 'identity') + 
+ coord_flip() + 
+ theme_minimal() + 
+ scale_fill_brewer(palette = "YlOrRd") + 
+ ggtitle("Most Common Artist and Station Combination") + 
+ labs(y = "Times Played", x = "Artist")
+
+```
+
+This graph shows the 5 most played artists by a single radio station over the duration of the sampled week. WAXQ played Led Zeppelin 113 times during the week, which was the most times any station played a single artist. Van Halen made the top 5 with 2 different radio stations.
+
+**Question 4: What were the most played songs on the top stations?**
+
+To answer this question we first had to filter for the desired callsign. After we filtered for a desired callsign, we grouped by the songs and counted the number of times each song was played. After we count the number of times the songs were played we again arrange the data in descending order and filter for the top 5 values.
+```{r}
+
+top_KSEG <- classic_rock_raw_data %>% 
+ filter(callsign == "KSEG") %>% 
+ group_by(song) %>% 
+ count(song) %>% 
+ arrange(desc(n)) %>% 
+ filter(n>=7) %>% 
+ rename("times played" = n)
+
+top_WXGL <- classic_rock_raw_data %>% 
+ filter(callsign == "WXGL") %>% 
+ group_by(song) %>% 
+ count(song) %>% 
+ arrange(desc(n)) %>% 
+ filter(n>=12) %>% 
+ rename("times played" = n)
+
+top_WCSX <- classic_rock_raw_data %>% 
+ filter(callsign == "WCSX") %>% 
+ group_by(song) %>% 
+ count(song) %>% 
+ arrange(desc(n)) %>% 
+ filter(n>=11) %>% 
+ rename("times played" = n)
+
+```
+
+To generate the tables we again just used formattable to make our dataset look a bit nicer.
+```{r}
+
+formattable(top_KSEG, align = c("l","r"))
+formattable(top_WXGL, align = c("l","r"))
+formattable(top_WCSX, align = c("l","r"))
+
+```
+
+From these tables we discover "Come Together" was the most played song on KSEG, "More than a Feeling" was the most played song on WXGL, and "Come Together" and "Wheel in the Sky" were tied for the most played song on WCSX.
+
+**Question 5: Who were the most played artists on the top stations?**
+
+To answer this question we mostly used the same steps as in question 4, but we group the data by artists and counted the number of times the station played each artist instead of songs.
+```{r}
+
+top_artist_KSEG <- classic_rock_raw_data %>% 
+ filter(callsign == "KSEG") %>% 
+ group_by(artist) %>% 
+ count(artist) %>% 
+ arrange(desc(n)) %>% 
+ filter(n>= 50)
+
+top_artist_WXGL <- classic_rock_raw_data %>% 
+ filter(callsign == "WXGL") %>% 
+ group_by(artist) %>% 
+ count(artist) %>% 
+ arrange(desc(n)) %>% 
+ filter(n>=69)
+
+top_artist_WCSX <- classic_rock_raw_data %>% 
+ filter(callsign == "WCSX") %>% 
+ group_by(artist) %>% 
+ count(artist) %>% 
+ arrange(desc(n)) %>% 
+ filter(n>=48)
+
+```
+
+To create the graphs for these plots we used ggplot to make a bar graph again. We used the artists names as the categorical variable and the number of times the stations played the artists as the quantitative variable. We then used scale_fill_brewer to give all of the graphs the same theme. Lastly we added a title and axis labels to each graph.
+```{r}
+
+ggplot(top_artist_KSEG, aes(x = reorder(artist, n), y = n, fill = artist)) + 
+ geom_bar(stat = "identity") + 
+ coord_flip() + 
+ theme_minimal() + 
+ scale_fill_brewer(palette = "YlOrRd") + 
+ ggtitle("Most Popular Artists on KSEG") + 
+ labs(y = "Times Played", x = "Artist")
+
+ggplot(top_artist_WXGL, aes(x = reorder(artist, n), y = n, fill = artist)) + 
+ geom_bar(stat = "identity") + 
+ coord_flip() + 
+ theme_minimal() + 
+ scale_fill_brewer(palette = "YlOrRd") + 
+ ggtitle("Most Popular Artists on WXGL") + 
+ labs(y = "Times Played", x = "Artist")
+
+ggplot(top_artist_WCSX, aes(x = reorder(artist, n), y = n, fill = artist)) + 
+ geom_bar(stat = "identity") + 
+ coord_flip() + 
+ theme_minimal() + 
+ scale_fill_brewer(palette = "YlOrRd") + 
+ ggtitle("Most Popular Artists on WCSX") + 
+ labs(y = "Times Played", x = "Artist")
+
+```
+
+From these graphs we discovered that Led Zeppelin was the most played artist on KSEG and WCSX and Van Halen was the most played artist on WXGL.
+
+<br>
+
+### **Objective 4**
+#### Explore the similarities and popularity in song titles, whether that be the exact title or one specific word in the title  
+
+**Question 1: How many rock song titles have duplicate titles, but different artists?**  
+The first step to answering this question is to group each song by the title, using the variable 'song.' Then we used the dplyr package and used the function 'filter()' to filter out any song title that only appeared in the dataset once. After we filtered out all songs that only appeared once, we used the 'count()' function to see how many times that song title appeared, arranged them in a descending order, and created a new variable 'counts' with the number of songs that have the same title. 
+```{r}
+title <- classic_rock_song_list %>%
+  group_by(song) %>%
+  filter(n() > 1) %>%
+  count(song) %>%
+  arrange(desc(n)) %>%
+  mutate(counts = n) 
+```
+By doing this we found out that there are 64 different songs that have duplicate titles but different artists. The highest number of songs with the same title was three, with a majority of them being with two songs. Because of the high volume of songs that have duplicate titles, we decided to look further into all songs that have 3 or more songs with duplicate titles, which is shown in Question 2. 
+
+<br>
+
+**Question 1: What are the most popular rock song titles?**  
+The first step to answering this question is to group each song by the title, using the variable 'song' like we did for question 1. Then we used the dplyr package and used the function 'filter()' again, but this time we filtered out any song that had 2 or less titles, leaving us with all of the songs that have 3 songs with the same title. Then we created a new dataframe called 'same_title1' to move forwards and selected all of the variables from the 'classic_rock_song_list' data to get a deeper look at these popular song titles.  
+```{r}
+same_title <- classic_rock_song_list %>%
+  group_by(song) %>%
+  filter(n() > 2)
+
+same_title1 <- same_title %>%
+  select(song, artist, release_year, combined, has_year, playcount, playcount_has_year) 
+```
+
+After filtering out the songs with less than 3 of the same titles, we were left with 8 different song titles which is 24 different songs. These 8 song titles were all the most popular song titles in the dataset. 
+
+<br>
+
+**Question 3: Of the most popular rock song titles, which art has the most popular song of that title?**  
+The first step to answering this question is to take the dataframe with the most popular rock song titles, and filter out all but one of them by using the song title as the filter. Then we graphed the song by using the 'combined' variable as the x variable, which shows the song title and artist, and the 'playcount' as the y variable, which shows how many times the song has been played. We used a bar graph due to the fact that there are only 3 different songs on each graph and we thought it would give us the best visual for comparing. 
+```{r}
+same_title1 %>%
+  filter(song == "Changes") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25)) 
+```
+
+For the song title "Changes," the three artists are David Bowie, Ozzy Osbourne, and Yes. After looking at the graph, David Bowie has the most popular song with this title by a large majority. David Bowie has over 30 plas, where Ozzy Osbourne only has one play and Yes's version of the song has around 13. We then went onto the next song title with 3 songs, "Loser." 
+
+```{r}
+same_title1 %>%
+  filter(song == "Loser") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+
+For the song title "Loser," the three artists are 3 Doors Down, Beck, and Grateful Dead. The graph of "Loser" is very interesting because all three songs only have a playcount of one. Because of this, we are unable to determine which of these three songs was the most popular. We can determine that none of these songs were extremely popular overall though, due to their low playcount. We then went onto the next song title with 3 songs, "Knockin' On Heaven's Door."
+
+```{r}
+same_title1 %>%
+  filter(song == "Knockin' On Heaven's Door") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+For the song title "Knockin' On Heaven's Door," the three artists are Bob Dylan, Eric Clapton, and Guns N' Roses. "Knockin' On Heaven's Door" seems to be a more popular song overall, with all three artists having a playcount over 10. Guns N' Roses have the most popular version of the song, being the only artist to have a playcount over 30. Eric Clapton had a playcount of 16, which put it in last place and Bob Dylan had a playcount of 22. We then went onto the next song title with 3 songs, "Photograph."
+
+```{r}
+same_title1 %>%
+  filter(song == "Photograph") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+For the song title "Photograph," the three artists are Def Leppard, Nickelback, Ringo Starr. "Photograph" by Def Leppard has the highest playcount of the three songs, along with the highest playcount that we have seen this far. This is offset by the extremely low playcount of Nickelback and Ringo Starr's songs. We then went onto the next song title with 3 songs, "Don't Bring Me Down."
+
+```{r}
+same_title1 %>%
+  filter(song == "Don't Bring Me Down") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25)) 
+```
+For the song title "Don't Bring Me Down," the three artists are Animals II, Electric Light Orchestra, and The Animals. Once again, this is not an even spread at all, with Electric Light Orchestra having a playcount of over 80, whereas the other two artists look like they have a playcount of 1 or 2. We then went onto the next song title with three songs, "Funk #49."
+```{r}
+same_title1 %>%
+  filter(song == "Funk #49") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+For the song title "Funk #49," the three artists are James Gang, Joe Walsh, and The James Gang. This is the first song where we might have a duplicate song that wouldn't necessarily count as two separate songs. The artists 'James Gang' and 'The James Gang' are considered different, but are most likely the same. That being said, James Gang had the highest playcount of 18 without adding in the other 4 plays from The James Gang's playcount. After this, we are looking at the next song title with three artists, "Stop Draggin' My Heart Around."
+
+```{r}
+same_title1 %>%
+  filter(song == "Stop Draggin' My Heart Around") %>%
+  ggplot(aes(x=artist, y=playcount, fill = factor(artist))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle= 25), legend.position = "bottom")
+```
+For the song title "Stop Draggin' My Heart Around," we did the variables a little differently to account for the long title and artist name in the bar graph. Because both the title and artist names are longer than normal, we decided to just display the artist name. Because the filter is picking only this specific song title, the change from 'combined' to 'artist' for the x-variable does not change the graph. The three artists for "Stop Draggin' My Heart Around" are Stevie Nicks, Stevie Nicks w/ Tom Petty and the Heartbreakers, and Tom Petty and the Heartbreakers. After looking at the artists, it is apparent that this is all the same song, just redone as a duet and then by the Tom Petty and the Heartbreakers. Surprisingly enough, the duet of the song had the highest playcount of around 8, and the original song by Stevie Nicks was in second with a playcount of around 7. The last song title with three different artists is "Summertime Blues."
+
+```{r}
+same_title1 %>%
+  filter(song == "Summertime Blues") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25)) 
+```
+For the song "Summertime Blues," the three artists are Blue Oyster Cult, Rush, and The Who. Like most of the songs that we have looked at, none of these three songs were very popular due to their low playcount. The Who had the most popular song with this title, having a playcount of around 8, whereas Blue Oyster Cult and Rush both had a playcount of 1. 
+<br>
+
+**Question 4: Looking at the most popular rock songs with duplicate titles, are their any bands or titles that tend to stand out among the rest?**  
+The first step was to look at the overall playcounts of all 8 song titles that we had looked at in the previous question. Due to so many of the songs having a low playcount, we decided that having a playcount over 15 made the song stand out. To do this, we started with the dataframe created earlier that contained all songs that had 3 or more of the same title with different artists. Then we used the dplyr function 'filter()' again to filter out any song that had a playcount less than 15. We used this filtered data and put it into a bar graph using ggplot. 
+```{r}
+
+same_title1 %>%
+  filter(playcount > 15) %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_blank())  +
+  labs(
+    title = "Most Common Songs Out of the Duplicate Titles",
+    x = "",
+    y = "Playcounts"
+  )
+```
+Out of the 24 songs in the dataframe, there were 7 songs that had a playcount over 15. There is a large range for these songs, with "Photograph" by Def Leppard being the most popular song. One thing that really stood out is that "Knockin' On Heaven's Door" is the only song that showed up more than once in this graph, meaning that no other song titles had multiple artists having a popular version of the song. With Bob Dylan, Eric Clapton, and Guns N' Roses all being in the graph, we decided that this is the song title that stands out among all of them.
+
+<br>
+
+**Question 5: What words are most common in rock song titles?**  
+The first step to answering this question is to split each song title into  their own rows to get each individual word in the song. To do this, we took the 'classic_rock_song_list' data and selected just the 'song' variable. After that, we used 'strsplit() from the stringr package to split each song title into individual words, using a space (" ") as the separator. Once they were split we unlisted the words so that we could use the function 'cbind' to put these words and their frequencies into a new dataframe. 
+```{r}
+library(stringr)
+common_name <- classic_rock_song_list %>% 
+  select(song)
+
+words <- strsplit(common_name$song, " ") 
+words1 <- unlist(words)
+freq_words <- table(words1) 
+freqtable <- cbind.data.frame(word=names(freq_words),freq=as.integer(freq_words)) 
+```
+
+After looking at this, we found that there were 2,314 different words or numbers used in these song titles. Because that is way too many to analyze, we wanted to filter out song titles that had a low frequency and were general words such as "to," "and," "for," etc. To do that, we filtered out and word that had a string length less than 3 and a frequency less than 20. We then used ggplot to graph the words that were left to see which were the most popular. We used the word as the x-variable and the frequency as the y-variable, and decided on a bar graph for comparison. 
+
+```{r}
+freqtable %>%
+  arrange(desc(freq)) %>%
+  filter(str_length(word) > 3 & freq > 20) %>%
+  ggplot(aes(x = word, y = freq, fill = factor(freq))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd") + 
+  theme(axis.text.x = element_text(angle = 45)) +
+  labs(
+    title = "Most Common Words in Rock Songs",
+    x = "Words",
+    y = "Number of Times the Word Occurs"
+  )
+```
+
+This graph shows the most common 14 words in rock song titles. 'Love' was the most popular word showing up in song titles 87 times, with 'rock' coming in second showing up 45 times. Other words that were interesting were woman, little, night, and roll. 
+
+<br>

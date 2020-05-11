@@ -1,0 +1,214 @@
+---
+title: "Objective 3"
+author: "Matthew"
+date: "5/6/2020"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+
+library(fivethirtyeight)
+library(tidyverse)
+library(lubridate)
+library(RColorBrewer)
+library(formattable)
+
+data("classic_rock_raw_data")
+data("classic_rock_song_list")
+
+```
+
+
+### **Objective 3**
+#### Compare the music played on different radio stations  
+
+**Question 1: What Radio Stations played the most music?**  
+
+The first step to answering this question is to group the data by the different radio stations using the variable "callsign". After the data is grouped together we counted the number of times each callsign showed up in the data. After the callsigns were counted, we arranged them in descending order and renamed the count variable to make the table easier to read and understand.
+```{r}
+
+radio <- classic_rock_raw_data %>% 
+ group_by(callsign) %>% 
+ count(callsign) %>% 
+ arrange(desc(n)) %>% 
+ rename("songs played" = n)
+
+```
+
+Then we create a table of this new dataset "radio" using formattable just to make it look a little nicer.
+
+```{r}
+
+formattable(radio, align = c("l","r"))
+
+```
+
+This table shows the number of songs played by each radio station over the sampled week. The top 3 stations by number of songs played: "KSEG", "WXGL", and "WCSX" will be further explored in later parts of the project. 
+<br>
+
+**Question 2: What were the most repeated songs by a single radio station?**
+
+To answer this question we again started with grouping the data by "callsign". After that we counted the number of times each song appeared in each group. We arranged the data set in descending order and filtered at n>=13 because that was the cutoff for the top 5.
+```{r}
+
+songs_by_radio <- classic_rock_raw_data %>% 
+ group_by(callsign) %>% 
+ count(song) %>% 
+ arrange(desc(n)) %>% 
+ filter(n >= 13)
+
+```
+
+To create a graph for the dataset "songs_by_radio" we used ggplot to make a bar graph using the song title as the categorical variable and the number of times the song was played over the week as the quantitative variable. After that we used scale_fill_brewer to give our graphs a consistent theme. Finally we added a title and axis lables to make the graph easier to read and understand.
+
+```{r}
+
+ggplot(songs_by_radio, aes(x= reorder(song, n), y = n, fill = callsign)) + 
+ 
+ geom_bar(stat = 'identity') + 
+ coord_flip() + 
+ theme_minimal() + 
+ scale_fill_brewer(palette = "YlOrRd") + 
+ ggtitle("Most Common Song and Station Combination") + 
+ labs(y = "Times Played", x = "Song")
+
+```
+
+This graph shows the 5 most played songs by a single radio station over the duration of the sampled week. There was a three way tie for 4th, so 6 songs are listed. "More than a Feeling" was played 15 times by WXGL which was the most times any radio station played a single song during the sampled week. "All Along the Watchtower" made the top 5 with 2 different radio stations.
+
+**Question 3: What were the most repeated artists by a single radio station?**
+
+To answer this question we repeated the steps used to solve question 2, but counted the times the same artist appeared in each group instead of songs. We filtered the data >= 90 to obtain the top 5
+```{r}
+
+artists_by_radio <- classic_rock_raw_data %>% 
+ group_by(callsign) %>% 
+ count(artist) %>% 
+ arrange(desc(n)) %>% 
+ filter(n >= 90)
+
+```
+
+TO create this graph we again used a very similar set of steps to create the graph as we did in question 2. This time we used the "artists_by_radio:" data set instead of the "songs_by_radio" data set.
+```{r}
+
+ggplot(artists_by_radio, aes(x= reorder(artist, n), y = n, fill = callsign)) + 
+ geom_bar(stat = 'identity') + 
+ coord_flip() + 
+ theme_minimal() + 
+ scale_fill_brewer(palette = "YlOrRd") + 
+ ggtitle("Most Common Artist and Station Combination") + 
+ labs(y = "Times Played", x = "Artist")
+
+```
+
+This graph shows the 5 most played artists by a single radio station over the duration of the sampled week. WAXQ played Led Zeppelin 113 times during the week, which was the most times any station played a single artist. Van Halen made the top 5 with 2 different radio stations.
+
+**Question 4: What were the most played songs on the top stations?**
+
+To answer this question we first had to filter for the desired callsign. After we filtered for a desired callsign, we grouped by the songs and counted the number of times each song was played. After we count the number of times the songs were played we again arrange the data in descending order and filter for the top 5 values.
+```{r}
+
+top_KSEG <- classic_rock_raw_data %>% 
+ filter(callsign == "KSEG") %>% 
+ group_by(song) %>% 
+ count(song) %>% 
+ arrange(desc(n)) %>% 
+ filter(n>=7) %>% 
+ rename("times played" = n)
+
+top_WXGL <- classic_rock_raw_data %>% 
+ filter(callsign == "WXGL") %>% 
+ group_by(song) %>% 
+ count(song) %>% 
+ arrange(desc(n)) %>% 
+ filter(n>=12) %>% 
+ rename("times played" = n)
+
+top_WCSX <- classic_rock_raw_data %>% 
+ filter(callsign == "WCSX") %>% 
+ group_by(song) %>% 
+ count(song) %>% 
+ arrange(desc(n)) %>% 
+ filter(n>=11) %>% 
+ rename("times played" = n)
+
+```
+
+To generate the tables we again just used formattable to make our dataset look a bit nicer.
+```{r}
+
+formattable(top_KSEG, align = c("l","r"))
+formattable(top_WXGL, align = c("l","r"))
+formattable(top_WCSX, align = c("l","r"))
+
+```
+
+From these tables we discover "Come Together" was the most played song on KSEG, "More than a Feeling" was the most played song on WXGL, and "Come Together" and "Wheel in the Sky" were tied for the most played song on WCSX.
+
+**Question 5: Who were the most played artists on the top stations?**
+
+To answer this question we mostly used the same steps as in question 4, but we group the data by artists and counted the number of times the station played each artist instead of songs.
+```{r}
+
+top_artist_KSEG <- classic_rock_raw_data %>% 
+ filter(callsign == "KSEG") %>% 
+ group_by(artist) %>% 
+ count(artist) %>% 
+ arrange(desc(n)) %>% 
+ filter(n>= 50)
+
+top_artist_WXGL <- classic_rock_raw_data %>% 
+ filter(callsign == "WXGL") %>% 
+ group_by(artist) %>% 
+ count(artist) %>% 
+ arrange(desc(n)) %>% 
+ filter(n>=69)
+
+top_artist_WCSX <- classic_rock_raw_data %>% 
+ filter(callsign == "WCSX") %>% 
+ group_by(artist) %>% 
+ count(artist) %>% 
+ arrange(desc(n)) %>% 
+ filter(n>=48)
+
+```
+
+To create the graphs for these plots we used ggplot to make a bar graph again. We used the artists names as the categorical variable and the number of times the stations played the artists as the quantitative variable. We then used scale_fill_brewer to give all of the graphs the same theme. Lastly we added a title and axis labels to each graph.
+```{r}
+
+ggplot(top_artist_KSEG, aes(x = reorder(artist, n), y = n, fill = artist)) + 
+ geom_bar(stat = "identity") + 
+ coord_flip() + 
+ theme_minimal() + 
+ scale_fill_brewer(palette = "YlOrRd") + 
+ ggtitle("Most Popular Artists on KSEG") + 
+ labs(y = "Times Played", x = "Artist")
+
+ggplot(top_artist_WXGL, aes(x = reorder(artist, n), y = n, fill = artist)) + 
+ geom_bar(stat = "identity") + 
+ coord_flip() + 
+ theme_minimal() + 
+ scale_fill_brewer(palette = "YlOrRd") + 
+ ggtitle("Most Popular Artists on WXGL") + 
+ labs(y = "Times Played", x = "Artist")
+
+ggplot(top_artist_WCSX, aes(x = reorder(artist, n), y = n, fill = artist)) + 
+ geom_bar(stat = "identity") + 
+ coord_flip() + 
+ theme_minimal() + 
+ scale_fill_brewer(palette = "YlOrRd") + 
+ ggtitle("Most Popular Artists on WCSX") + 
+ labs(y = "Times Played", x = "Artist")
+
+```
+
+From these graphs we discovered that Led Zeppelin was the most played artist on KSEG and WCSX and Van Halen was the most played artist on WXGL.
+
+<br>
+

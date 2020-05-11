@@ -1,0 +1,196 @@
+---
+title: "Objective 4"
+author: "Haylee Weaver"
+date: "5/6/2020"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+
+library(fivethirtyeight)
+library(tidyverse)
+library(lubridate)
+library(RColorBrewer)
+library(formattable)
+
+data("classic_rock_raw_data")
+data("classic_rock_song_list")
+
+```
+
+
+### **Objective 4**
+#### Explore the similarities and popularity in song titles, whether that be the exact title or one specific word in the title  
+
+**Question 1: How many rock song titles have duplicate titles, but different artists?**  
+The first step to answering this question is to group each song by the title, using the variable 'song.' Then we used the dplyr package and used the function 'filter()' to filter out any song title that only appeared in the dataset once. After we filtered out all songs that only appeared once, we used the 'count()' function to see how many times that song title appeared, arranged them in a descending order, and created a new variable 'counts' with the number of songs that have the same title. 
+```{r}
+title <- classic_rock_song_list %>%
+  group_by(song) %>%
+  filter(n() > 1) %>%
+  count(song) %>%
+  arrange(desc(n)) %>%
+  mutate(counts = n) 
+```
+By doing this we found out that there are 64 different songs that have duplicate titles but different artists. The highest number of songs with the same title was three, with a majority of them being with two songs. Because of the high volume of songs that have duplicate titles, we decided to look further into all songs that have 3 or more songs with duplicate titles, which is shown in Question 2. 
+
+<br>
+
+**Question 1: What are the most popular rock song titles?**  
+The first step to answering this question is to group each song by the title, using the variable 'song' like we did for question 1. Then we used the dplyr package and used the function 'filter()' again, but this time we filtered out any song that had 2 or less titles, leaving us with all of the songs that have 3 songs with the same title. Then we created a new dataframe called 'same_title1' to move forwards and selected all of the variables from the 'classic_rock_song_list' data to get a deeper look at these popular song titles.  
+```{r}
+same_title <- classic_rock_song_list %>%
+  group_by(song) %>%
+  filter(n() > 2)
+
+same_title1 <- same_title %>%
+  select(song, artist, release_year, combined, has_year, playcount, playcount_has_year) 
+```
+
+After filtering out the songs with less than 3 of the same titles, we were left with 8 different song titles which is 24 different songs. These 8 song titles were all the most popular song titles in the dataset. 
+
+<br>
+
+**Question 3: Of the most popular rock song titles, which art has the most popular song of that title?**  
+The first step to answering this question is to take the dataframe with the most popular rock song titles, and filter out all but one of them by using the song title as the filter. Then we graphed the song by using the 'combined' variable as the x variable, which shows the song title and artist, and the 'playcount' as the y variable, which shows how many times the song has been played. We used a bar graph due to the fact that there are only 3 different songs on each graph and we thought it would give us the best visual for comparing. 
+```{r}
+same_title1 %>%
+  filter(song == "Changes") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25)) 
+```
+
+For the song title "Changes," the three artists are David Bowie, Ozzy Osbourne, and Yes. After looking at the graph, David Bowie has the most popular song with this title by a large majority. David Bowie has over 30 plas, where Ozzy Osbourne only has one play and Yes's version of the song has around 13. We then went onto the next song title with 3 songs, "Loser." 
+
+```{r}
+same_title1 %>%
+  filter(song == "Loser") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+
+For the song title "Loser," the three artists are 3 Doors Down, Beck, and Grateful Dead. The graph of "Loser" is very interesting because all three songs only have a playcount of one. Because of this, we are unable to determine which of these three songs was the most popular. We can determine that none of these songs were extremely popular overall though, due to their low playcount. We then went onto the next song title with 3 songs, "Knockin' On Heaven's Door."
+
+```{r}
+same_title1 %>%
+  filter(song == "Knockin' On Heaven's Door") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+For the song title "Knockin' On Heaven's Door," the three artists are Bob Dylan, Eric Clapton, and Guns N' Roses. "Knockin' On Heaven's Door" seems to be a more popular song overall, with all three artists having a playcount over 10. Guns N' Roses have the most popular version of the song, being the only artist to have a playcount over 30. Eric Clapton had a playcount of 16, which put it in last place and Bob Dylan had a playcount of 22. We then went onto the next song title with 3 songs, "Photograph."
+
+```{r}
+same_title1 %>%
+  filter(song == "Photograph") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+For the song title "Photograph," the three artists are Def Leppard, Nickelback, Ringo Starr. "Photograph" by Def Leppard has the highest playcount of the three songs, along with the highest playcount that we have seen this far. This is offset by the extremely low playcount of Nickelback and Ringo Starr's songs. We then went onto the next song title with 3 songs, "Don't Bring Me Down."
+
+```{r}
+same_title1 %>%
+  filter(song == "Don't Bring Me Down") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25)) 
+```
+For the song title "Don't Bring Me Down," the three artists are Animals II, Electric Light Orchestra, and The Animals. Once again, this is not an even spread at all, with Electric Light Orchestra having a playcount of over 80, whereas the other two artists look like they have a playcount of 1 or 2. We then went onto the next song title with three songs, "Funk #49."
+```{r}
+same_title1 %>%
+  filter(song == "Funk #49") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+For the song title "Funk #49," the three artists are James Gang, Joe Walsh, and The James Gang. This is the first song where we might have a duplicate song that wouldn't necessarily count as two separate songs. The artists 'James Gang' and 'The James Gang' are considered different, but are most likely the same. That being said, James Gang had the highest playcount of 18 without adding in the other 4 plays from The James Gang's playcount. After this, we are looking at the next song title with three artists, "Stop Draggin' My Heart Around."
+
+```{r}
+same_title1 %>%
+  filter(song == "Stop Draggin' My Heart Around") %>%
+  ggplot(aes(x=artist, y=playcount, fill = factor(artist))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle= 25), legend.position = "bottom")
+```
+For the song title "Stop Draggin' My Heart Around," we did the variables a little differently to account for the long title and artist name in the bar graph. Because both the title and artist names are longer than normal, we decided to just display the artist name. Because the filter is picking only this specific song title, the change from 'combined' to 'artist' for the x-variable does not change the graph. The three artists for "Stop Draggin' My Heart Around" are Stevie Nicks, Stevie Nicks w/ Tom Petty and the Heartbreakers, and Tom Petty and the Heartbreakers. After looking at the artists, it is apparent that this is all the same song, just redone as a duet and then by the Tom Petty and the Heartbreakers. Surprisingly enough, the duet of the song had the highest playcount of around 8, and the original song by Stevie Nicks was in second with a playcount of around 7. The last song title with three different artists is "Summertime Blues."
+
+```{r}
+same_title1 %>%
+  filter(song == "Summertime Blues") %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_text(angle = 25)) 
+```
+For the song "Summertime Blues," the three artists are Blue Oyster Cult, Rush, and The Who. Like most of the songs that we have looked at, none of these three songs were very popular due to their low playcount. The Who had the most popular song with this title, having a playcount of around 8, whereas Blue Oyster Cult and Rush both had a playcount of 1. 
+<br>
+
+**Question 4: Looking at the most popular rock songs with duplicate titles, are their any bands or titles that tend to stand out among the rest?**  
+The first step was to look at the overall playcounts of all 8 song titles that we had looked at in the previous question. Due to so many of the songs having a low playcount, we decided that having a playcount over 15 made the song stand out. To do this, we started with the dataframe created earlier that contained all songs that had 3 or more of the same title with different artists. Then we used the dplyr function 'filter()' again to filter out any song that had a playcount less than 15. We used this filtered data and put it into a bar graph using ggplot. 
+```{r}
+
+same_title1 %>%
+  filter(playcount > 15) %>%
+  ggplot(aes(x=combined, y=playcount, fill = factor(combined))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() + scale_fill_brewer(palette = "YlOrRd") +
+  theme(axis.text.x = element_blank())  +
+  labs(
+    title = "Most Common Songs Out of the Duplicate Titles",
+    x = "",
+    y = "Playcounts"
+  )
+```
+Out of the 24 songs in the dataframe, there were 7 songs that had a playcount over 15. There is a large range for these songs, with "Photograph" by Def Leppard being the most popular song. One thing that really stood out is that "Knockin' On Heaven's Door" is the only song that showed up more than once in this graph, meaning that no other song titles had multiple artists having a popular version of the song. With Bob Dylan, Eric Clapton, and Guns N' Roses all being in the graph, we decided that this is the song title that stands out among all of them.
+
+<br>
+
+**Question 5: What words are most common in rock song titles?**  
+The first step to answering this question is to split each song title into  their own rows to get each individual word in the song. To do this, we took the 'classic_rock_song_list' data and selected just the 'song' variable. After that, we used 'strsplit() from the stringr package to split each song title into individual words, using a space (" ") as the separator. Once they were split we unlisted the words so that we could use the function 'cbind' to put these words and their frequencies into a new dataframe. 
+```{r}
+library(stringr)
+common_name <- classic_rock_song_list %>% 
+  select(song)
+
+words <- strsplit(common_name$song, " ") 
+words1 <- unlist(words)
+freq_words <- table(words1) 
+freqtable <- cbind.data.frame(word=names(freq_words),freq=as.integer(freq_words)) 
+```
+
+After looking at this, we found that there were 2,314 different words or numbers used in these song titles. Because that is way too many to analyze, we wanted to filter out song titles that had a low frequency and were general words such as "to," "and," "for," etc. To do that, we filtered out and word that had a string length less than 3 and a frequency less than 20. We then used ggplot to graph the words that were left to see which were the most popular. We used the word as the x-variable and the frequency as the y-variable, and decided on a bar graph for comparison. 
+
+```{r}
+freqtable %>%
+  arrange(desc(freq)) %>%
+  filter(str_length(word) > 3 & freq > 20) %>%
+  ggplot(aes(x = word, y = freq, fill = factor(freq))) +
+  geom_bar(stat = "identity", position = position_dodge(), color = 'black') +
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd") + 
+  theme(axis.text.x = element_text(angle = 45)) +
+  labs(
+    title = "Most Common Words in Rock Songs",
+    x = "Words",
+    y = "Number of Times the Word Occurs"
+  )
+```
+
+This graph shows the most common 14 words in rock song titles. 'Love' was the most popular word showing up in song titles 87 times, with 'rock' coming in second showing up 45 times. Other words that were interesting were woman, little, night, and roll. 
+
+<br>
